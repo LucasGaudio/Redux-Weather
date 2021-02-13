@@ -1,32 +1,59 @@
-import { Grid, Typography, makeStyles } from "@material-ui/core";
+import { Grid, Typography, makeStyles, useTheme } from "@material-ui/core";
+import useMediaQuerry from "@material-ui/core/useMediaQuery";
+
 import dayjs from "dayjs";
 
-import * as recommendations from "../recommendation.json";
+import * as recommendations from "../json/recommendation.json";
+import * as icons from "../json/icons.json";
 
-const useStyles = makeStyles(() => ({
+import "../assets/css/weather-icons.min.css";
+
+const useStyles = makeStyles(theme => ({
+	firstText: {
+		fontSize: "1.4rem",
+		fontWeight: "bold",
+		marginBottom: 15,
+		color: theme.palette.secondary.main,
+		fontFamily: "Sarabun",
+	},
 	title: {
 		fontSize: "1.4rem",
 		fontWeight: "bold",
-		marginBottom: 20,
+		color: theme.palette.primary.dark,
+		fontFamily: "Sarabun",
 	},
 	timeText: {
 		fontSize: "1.2rem",
 		marginBottom: 20,
 	},
-	boxLabel: {
-		fontSize: "0.9rem",
-		letterSpacing: 1,
+	extraText: {
+		fontSize: "1.2rem",
 		marginBottom: 5,
+		fontFamily: "Sarabun",
+	},
+	extraContainer: {
+		marginBottom: 10,
+		[theme.breakpoints.down("sm")]: {
+			marginTop: 20,
+		},
 	},
 	image: {
 		marginBottom: 10,
+		height: "6em",
+		color: theme.palette.primary.main,
 	},
 	recommendationText: {
-		fontSize: "1.4rem",
+		fontSize: "1.2rem",
 		textAlign: "center",
+		maxWidth: "20em",
+		fontFamily: "Sarabun",
+		fontWeight: 500,
 	},
 	tempText: {
-		fontSize: "2.8rem",
+		fontSize: "5.2rem",
+		color: theme.palette.primary.dark,
+		fontFamily: "Sarabun",
+		fontWeight: 200,
 	},
 	boxText: {
 		fontSize: 16,
@@ -39,11 +66,10 @@ const useStyles = makeStyles(() => ({
 
 export default function WeatherData({ data }) {
 	const classes = useStyles();
+	const theme = useTheme();
+	const matchesSM = useMediaQuerry(theme.breakpoints.down("sm"));
 
 	const celcius = (data.main.temp - 273.15).toFixed(0);
-	const celciusFeelsLike = (data.main.feels_like - 273.15).toFixed(0);
-
-	const currentTime = dayjs(data.data).format("HH:mm");
 
 	const currentHour = dayjs(data.date).format("H");
 
@@ -51,46 +77,75 @@ export default function WeatherData({ data }) {
 
 	const currentWeather = data.weather[0].id;
 
+	const prefix = "wi wi-";
+
+	const weatherIcon = prefix + icons.default[timeOfDay][currentWeather].icon;
+
 	return (
-		<Grid item container direction="column" alignItems="center">
-			<Typography className={classes.title}>
-				{data.name} - {data.sys.country}
-			</Typography>
-
-			<Typography className={classes.timeText}>{currentTime}</Typography>
-
-			<Typography className={classes.tempText}>{celcius}ºC</Typography>
-			<Typography className={classes.boxLabel}>Feels like {celciusFeelsLike}ºC</Typography>
-
+		<Grid
+			item
+			container
+			direction={matchesSM ? "column" : "row"}
+			justify="space-around"
+			alignItems="center"
+		>
 			<Grid item>
-				<Grid item container direction="column" alignItems="center">
-					<Typography className={classes.boxLabel}>
-						{data.weather[0].description}
+				<Grid
+					item
+					container
+					direction="column"
+					justify="space-around"
+					alignItems={matchesSM ? "center" : "flex-start"}
+				>
+					<Typography className={classes.firstText}>Current Weather</Typography>
+					<Typography className={classes.title}>
+						{data.name} - {data.sys.country}
 					</Typography>
-					<img
-						src={`http://openweathermap.org/img/wn/${data.weather[0].icon}.png`}
-						alt={data.weather[0].description}
-						className={classes.image}
-					/>
+
+					{/* <Typography className={classes.timeText}>{currentTime}</Typography> */}
+					<Grid item>
+						<Grid item container alignItems="center">
+							<i alt={data.weather[0].description} className={weatherIcon} />
+
+							<Typography className={classes.tempText}>{celcius}ºC</Typography>
+						</Grid>
+					</Grid>
+
+					<Typography className={classes.recommendationText}>
+						{recommendations.default[timeOfDay][currentWeather].recommendation}
+					</Typography>
 				</Grid>
 			</Grid>
 
 			<Grid item>
-				<Typography className={classes.recommendationText}>
-					{recommendations.default[timeOfDay][currentWeather].recommendation}
-				</Typography>
-			</Grid>
+				<Grid item container direction="column">
+					<Grid item className={classes.extraContainer}>
+						<Grid item container alignItems="center">
+							<i className="extra wi-humidity" />
+							<Typography className={classes.extraText}>
+								Humidity: {data.main.humidity}%
+							</Typography>
+						</Grid>
+					</Grid>
 
-			<Grid item container justify="space-between" className={classes.extraInfo}>
-				<Typography className={classes.boxLabel}>
-					Humidity: {data.main.humidity}%
-				</Typography>
+					<Grid item className={classes.extraContainer}>
+						<Grid item container alignItems="center">
+							<i className="extra wi-barometer" />
+							<Typography className={classes.extraText}>
+								Pressure: {data.main.pressure}hPa
+							</Typography>
+						</Grid>
+					</Grid>
 
-				<Typography className={classes.boxLabel}>
-					Pressure: {data.main.pressure}hPa
-				</Typography>
-
-				<Typography className={classes.boxLabel}>Wind: {data.wind.speed} m/s</Typography>
+					<Grid item className={classes.extraContainer}>
+						<Grid item container alignItems="center">
+							<i className="extra wi-strong-wind" />
+							<Typography className={classes.extraText}>
+								Wind: {data.wind.speed} m/s
+							</Typography>
+						</Grid>
+					</Grid>
+				</Grid>
 			</Grid>
 		</Grid>
 	);

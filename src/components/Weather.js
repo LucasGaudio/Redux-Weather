@@ -2,13 +2,13 @@ import {
 	Grid,
 	Typography,
 	makeStyles,
-	useTheme,
 	CircularProgress,
 	Card,
 	CardContent,
 } from "@material-ui/core";
 
 import WeatherData from "./WeatherData";
+import WeatherForecast from "./WeatherForecast";
 
 const useStyles = makeStyles(theme => ({
 	error: {
@@ -21,8 +21,23 @@ const useStyles = makeStyles(theme => ({
 		alignItems: "center",
 		boxShadow: theme.shadows[10],
 		borderRadius: 15,
-		height: "35em",
-		width: "30em",
+		height: "22em",
+		width: "55em",
+		[theme.breakpoints.down("sm")]: {
+			width: "33em",
+			height: "35em",
+		},
+		[theme.breakpoints.down("xs")]: {
+			width: "22em",
+			height: "38em",
+		},
+	},
+	forecastCard: {
+		marginTop: 20,
+		marginBottom: 20,
+		[theme.breakpoints.up("md")]: {
+			height: "16em",
+		},
 	},
 	circularProgress: {
 		display: "flex",
@@ -32,9 +47,8 @@ const useStyles = makeStyles(theme => ({
 	},
 }));
 
-export default function Weather({ loading, data, error }) {
+export default function Weather({ loading, data, newData, error }) {
 	const classes = useStyles();
-	const theme = useTheme();
 
 	if (error) {
 		return (
@@ -44,26 +58,35 @@ export default function Weather({ loading, data, error }) {
 		);
 	}
 
-	if (!loading && !data) {
+	if (!loading && !data && !newData) {
 		return null;
 	}
 
 	return (
-		<Grid item container justify="center" alignItems="center">
+		<Grid item container direction="column" justify="center" alignItems="center">
 			<Card className={classes.card}>
-				<Grid
-					item
-					container
-					direction="column"
-					justify="center"
-					alignItems="center"
-					className={classes.container}
-				>
+				<Grid item container direction="column" className={classes.container}>
 					<CardContent>
-						{loading ? (
-							<CircularProgress value={75} className={classes.circularProgress} />
+						{loading && !data && !newData ? (
+							<Grid item container justify="center" alignItems="center">
+								<CircularProgress value={75} className={classes.circularProgress} />
+							</Grid>
 						) : (
 							<WeatherData data={data} />
+						)}
+					</CardContent>
+				</Grid>
+			</Card>
+
+			<Card className={`${classes.card} ${classes.forecastCard}`}>
+				<Grid item container direction="column" className={classes.container}>
+					<CardContent>
+						{loading && !data && !newData ? (
+							<Grid item container justify="center" alignItems="center">
+								<CircularProgress value={75} className={classes.circularProgress} />
+							</Grid>
+						) : (
+							<WeatherForecast newData={newData} />
 						)}
 					</CardContent>
 				</Grid>
